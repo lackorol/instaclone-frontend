@@ -5,14 +5,18 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
-import { isLoggedInVar } from "./screens/apollo";
+import { ThemeProvider } from "styled-components";
+import { darkModeVar, isLoggedInVar } from "./screens/apollo";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
+import { darkTheme, GlobalStyles, lightTheme } from "./styles";
 
 function App() {
   const isLoggedIn = useReactiveVar(isLoggedInVar);
+  const darkMode = useReactiveVar(darkModeVar);
   return (
-    <div>
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+      <GlobalStyles />
       <Router>
         <Switch>
           <Route path="/" exact>
@@ -27,7 +31,7 @@ function App() {
           </Route>
         </Switch>
       </Router>
-    </div>
+    </ThemeProvider>
   );
 }
 
