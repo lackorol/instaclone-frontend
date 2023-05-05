@@ -1,10 +1,5 @@
 import { ApolloProvider, useReactiveVar } from '@apollo/client';
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch
-} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { client, darkModeVar, isLoggedInVar } from './screens/apollo';
 import Home from './screens/Home';
@@ -12,6 +7,7 @@ import Login from './screens/Login';
 import { darkTheme, GlobalStyles, lightTheme } from './styles';
 import routes from './routes';
 import SignUp from './screens/SignUp';
+import NotFound from './screens/NotFound';
 
 function App() {
   const isLoggedIn = useReactiveVar(isLoggedInVar);
@@ -34,8 +30,7 @@ function App() {
               <h1>Potato</h1>
             </Route>
             <Route>
-              {/* <NotFound /> */}
-              <Redirect />
+              <NotFound />
             </Route>
           </Switch>
         </Router>

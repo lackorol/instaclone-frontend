@@ -1,7 +1,4 @@
-import {
-  faFacebookSquare,
-  faInstagram
-} from '@fortawesome/free-brands-svg-icons';
+import { faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import gql from 'graphql-tag';
 import { useForm } from 'react-hook-form';
@@ -9,94 +6,60 @@ import styled from 'styled-components';
 import Button from '../components/auth/Button';
 import FormError from '../components/auth/FormError';
 import Input from '../components/auth/Input';
+import routes from '../routes';
+import AuthLayout from '../components/auth/Container';
+import Separator from '../components/auth/Separator';
+import FormBox from '../components/auth/FormBox';
+import BottomBox from '../components/auth/BottomBox';
+import { FatLink } from '../components/shared';
+import { useMutation } from '@apollo/client';
+import { useHistory } from 'react-router-dom';
 
-const Container = styled.div`
+const HeaderContainer = styled.div`
   display: flex;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
 `;
 
-const WhiteBox = styled.div`
-  background-color: white;
-  border: 1px solid rgb(219, 219, 219);
-  width: 100%;
+const Subtitle = styled(FatLink)`
+  font-size: 16px;
+  text-align: center;
+  margin-top: 10px;
 `;
 
-const BottomBox = styled(WhiteBox)``;
-
-const TopBox = styled(WhiteBox)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 35px 40px 25px 40px;
-  form {
-    margin-top: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    input {
-      width: 100%;
-      padding: 7px;
-      background-color: #fafafa;
-      margin-top: 5px;
-      &:last-child {
-        border: none;
-        margin-top: 12px;
-        background-color: #0095f6;
-        color: white;
-        text-align: center;
-        padding: 6px 0px;
-        font-weight: 500;
-      }
+const CREATE_ACCOUNT_MUTATION = gql`
+  mutation createAccount(
+    $firstName: String!
+    $lastName: String
+    $username: String!
+    $email: String!
+    $password: String!
+  ) {
+    createAccount(
+      firstName: $firstName
+      lastName: $lastName
+      username: $username
+      email: $email
+      password: $password
+    ) {
+      username
     }
   }
 `;
 
-const Wrapper = styled.div`
-  max-width: 350px;
-  width: 100%;
-`;
-
-const Separator = styled.div`
-  margin: 15px 0px 30px 0px;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  align-items: center;
-  div {
-    width: 100%;
-    height: 2px;
-    background-color: rgb(219, 219, 219);
-  }
-
-  span {
-    margin: 0px 10px;
-    color: #8e8e8e;
-  }
-`;
-
-const FacebookLogin = styled.div`
-  span {
-    margin-left: 10px;
-  }
-`;
-
-const LOGIN_MUTATION = gql`
-  mutation login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
-      ok
-      token
-      error
+function SignUp() {
+  const history = useHistory();
+  const onCompleted = (data) => {
+    const {
+      createAccount: { ok, error }
+    } = data;
+    if (!ok) {
+      return;
     }
-  }
-`;
-
-const SignUp = () => {
+    history.push(routes.home);
+  };
+  const [createAccount, { loading }] = useMutation(CREATE_ACCOUNT_MUTATION, {
+    onCompleted
+  });
   const {
     register,
     watch,
@@ -104,10 +67,18 @@ const SignUp = () => {
     formState: { errors },
     formState
   } = useForm({
-    mode: 'onBlur'
+    mode: 'onChange'
   });
   const onSubmitValid = (data) => {
-    //console.log(data);
+    console.log(data);
+    if (loading) {
+      return false;
+    }
+    createAccount({
+      variables: {
+        ...data
+      }
+    });
   };
 
   const onSubmitInvalid = (data) => {
@@ -117,60 +88,76 @@ const SignUp = () => {
   console.log(errors);
   console.log(formState.isValid);
   return (
-    <Container>
-      <Wrapper>
-        <TopBox>
-          <div>
+    <AuthLayout>
+      <FormBox>
+        <div>
+          <HeaderContainer>
             <FontAwesomeIcon icon={faInstagram} size="6x" />
-          </div>
-          <form onSubmit={handleSubmit(onSubmitValid, onSubmitInvalid)}>
-            <Input
-              {...register('username', {
-                required: 'Username is required',
-                minLength: {
-                  value: 5,
-                  message: 'Username should be longer than 5 characters'
-                }
-              })}
-              name="username"
-              type="text"
-              placeholder="Username"
-              hasError={Boolean(errors?.username?.message)}
-            />
-            <FormError message={errors?.username?.message} />
-            <Input
-              {...register('password', {
-                required: 'Password is required'
-              })}
-              name="password"
-              type="password"
-              placeholder="Password"
-              hasError={Boolean(errors?.password?.message)}
-            />
-            <FormError message={errors?.password?.message} />
-            <Button
-              type="submit"
-              value="Log in"
-              disabled={!formState.isValid}
-            />
-          </form>
-          <Separator>
-            <div></div>
-            <span>Or</span>
-            <div></div>
-          </Separator>
-          <FacebookLogin>
-            <FontAwesomeIcon icon={faFacebookSquare} />
-            <span>Log in with Facebook</span>
-          </FacebookLogin>
-        </TopBox>
-        <BottomBox>
-          <span>Don't have an account</span>
-          <a href="#">Sign up</a>
-        </BottomBox>
-      </Wrapper>
-    </Container>
+            <Subtitle>
+              Sign up to see photos and videos from your friends.
+            </Subtitle>
+          </HeaderContainer>
+        </div>
+        <form onSubmit={handleSubmit(onSubmitValid, onSubmitInvalid)}>
+          <Input
+            {...register('firstName', {
+              required: 'First Name is required'
+            })}
+            type="text"
+            name="firstName"
+            placeholder="FirstName"
+          />
+          <Input
+            {...register('lastName', {
+              required: 'Last Name is required'
+            })}
+            type="text"
+            name="lastName"
+            placeholder="LastName"
+          />
+          <Input
+            {...register('email', {
+              required: 'Email is required'
+            })}
+            type="text"
+            name="email"
+            placeholder="Email"
+          />
+          <Input
+            {...register('username', {
+              required: 'Username is required',
+              minLength: {
+                value: 5,
+                message: 'Username should be longer than 5 characters'
+              }
+            })}
+            name="username"
+            type="text"
+            placeholder="Username"
+            hasError={Boolean(errors?.username?.message)}
+          />
+          <FormError message={errors?.username?.message} />
+          <Input
+            {...register('password', {
+              required: 'Password is required'
+            })}
+            name="password"
+            type="password"
+            placeholder="Password"
+            hasError={Boolean(errors?.password?.message)}
+          />
+          <FormError message={errors?.password?.message} />
+          <Button type="submit" value="Sign up" disabled={!formState.isValid} />
+        </form>
+        <Separator />
+      </FormBox>
+      <BottomBox
+        cta="Don't have an account?"
+        linkText="Sign up"
+        link={routes.signUp}
+      />
+    </AuthLayout>
   );
-};
+}
 
 export default SignUp;

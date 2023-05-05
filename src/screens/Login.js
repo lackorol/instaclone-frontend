@@ -9,74 +9,19 @@ import styled from 'styled-components';
 import Button from '../components/auth/Button';
 import FormError from '../components/auth/FormError';
 import Input from '../components/auth/Input';
-import { Link } from 'react-router-dom';
 import routes from '../routes';
-import AuthLayout from '../auth/Container';
-
-const WhiteBox = styled.div`
-  background-color: white;
-  border: 1px solid rgb(219, 219, 219);
-  width: 100%;
-`;
-
-const BottomBox = styled(WhiteBox)`
-  padding: 10px 0px;
-  text-align: center;
-`;
-
-const TopBox = styled(WhiteBox)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 35px 40px 25px 40px;
-  form {
-    margin-top: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    input {
-      width: 100%;
-      padding: 7px;
-      background-color: #fafafa;
-      margin-top: 5px;
-      &:last-child {
-        border: none;
-        margin-top: 12px;
-        background-color: #0095f6;
-        color: white;
-        text-align: center;
-        padding: 6px 0px;
-        font-weight: 500;
-      }
-    }
-  }
-`;
-
-const Separator = styled.div`
-  margin: 15px 0px 30px 0px;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  align-items: center;
-  div {
-    width: 100%;
-    height: 2px;
-    background-color: rgb(219, 219, 219);
-  }
-
-  span {
-    margin: 0px 10px;
-    color: #8e8e8e;
-    font-size: 12px;
-  }
-`;
+import AuthLayout from '../components/auth/Container';
+import Separator from '../components/auth/Separator';
+import FormBox from '../components/auth/FormBox';
+import BottomBox from '../components/auth/BottomBox';
+import { useMutation } from '@apollo/client';
+import { logUserIn } from './apollo';
 
 const FacebookLogin = styled.div`
+  color: #385285;
   span {
     margin-left: 10px;
+    font-weight: 600;
   }
 `;
 
@@ -100,8 +45,30 @@ const Login = () => {
   } = useForm({
     mode: 'onBlur'
   });
+  const onCompleted = (data) => {
+    const {
+      login: { ok, error, token }
+    } = data;
+    if (!ok) {
+      return setError('result', {
+        message: error
+      });
+    }
+    if (token) {
+      logUserIn(token);
+    }
+  };
+
+  const [login, { loading }] = useMutation(LOGIN_MUTATION, {
+    onCompleted
+  });
   const onSubmitValid = (data) => {
-    //console.log(data);
+    if (loading) return;
+
+    const { username, password } = data;
+    login({
+      variables: { username, password }
+    });
   };
 
   const onSubmitInvalid = (data) => {
@@ -112,7 +79,7 @@ const Login = () => {
   console.log(formState.isValid);
   return (
     <AuthLayout>
-      <TopBox>
+      <FormBox>
         <div>
           <FontAwesomeIcon icon={faInstagram} size="6x" />
         </div>
@@ -141,22 +108,23 @@ const Login = () => {
             hasError={Boolean(errors?.password?.message)}
           />
           <FormError message={errors?.password?.message} />
-          <Button type="submit" value="Log in" disabled={!formState.isValid} />
+          <Button
+            type="submit"
+            value={loading ? 'Loading...' : 'Log in'}
+            disabled={!formState.isValid || loading}
+          />
         </form>
-        <Separator>
-          <div></div>
-          <span>Or</span>
-          <div></div>
-        </Separator>
+        <Separator />
         <FacebookLogin>
           <FontAwesomeIcon icon={faFacebookSquare} />
           <span>Log in with Facebook</span>
         </FacebookLogin>
-      </TopBox>
-      <BottomBox>
-        <span>Don't have an account</span>
-        <Link to={routes.signUp}>Sign up</Link>
-      </BottomBox>
+      </FormBox>
+      <BottomBox
+        cta="Don't have an account?"
+        linkText="Sign up"
+        link={routes.home}
+      />
     </AuthLayout>
   );
 };
