@@ -16,7 +16,7 @@ function App() {
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <GlobalStyles />
-      <ApolloProvider client={client}>
+      <ApolloProvider  client={client}>
         <Router>
           <Switch>
             <Route path={routes.home} exact>
