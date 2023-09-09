@@ -8,6 +8,7 @@ import { isLoggedInVar } from '../screens/apollo';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
 import useUser from '../hooks/useUser';
+import Avatar from './Avatar';
 
 const SHeader = styled.header`
   width: 100%;
@@ -41,19 +42,23 @@ const Button = styled.span`
   font-weight: 600;
 `;
 
+const IconsContainer = styled.div`
+  display: flex;
+`;
+
 function Header() {
   const isLoggedIn = useReactiveVar(isLoggedInVar);
-  const loggedInUser = useUser();
-
+  console.log(isLoggedIn);
+  const { data } = useUser();
   return (
     <SHeader>
       <Wrapper>
         <Column>
           <FontAwesomeIcon icon={faInstagram} size="2x" />
         </Column>
-        {!isLoggedIn ? (
-          <>
-            <Column>
+        <Column>
+          {isLoggedIn ? (
+            <IconsContainer>
               <Icon>
                 <FontAwesomeIcon icon={faHome} size="lg" />
               </Icon>
@@ -61,15 +66,22 @@ function Header() {
                 <FontAwesomeIcon icon={faCompass} size="lg" />
               </Icon>
               <Icon>
-                <FontAwesomeIcon icon={faUser} size="lg" />
+                <Avatar url={data?.me?.avatar} />
               </Icon>
-            </Column>
-          </>
-        ) : (
-          <Link to={routes.home}>
-            <Button>Login</Button>
-          </Link>
-        )}
+              {/*              {data?.me?.avatar ? (
+                ''
+              ) : (
+                <Icon>
+                  <FontAwesomeIcon icon={faUser} size="lg" />
+                </Icon>
+              )}*/}
+            </IconsContainer>
+          ) : (
+            <Link to={routes.home}>
+              <Button>Login</Button>
+            </Link>
+          )}
+        </Column>
       </Wrapper>
     </SHeader>
   );

@@ -8,7 +8,7 @@ import { setContext } from '@apollo/client/link/context';
 
 const DARK_MODE = 'DARK_MODE';
 const TOKEN = 'token';
-export const isLoggedInVar = makeVar(localStorage.getItem(TOKEN));
+export const isLoggedInVar = makeVar(Boolean(localStorage.getItem(TOKEN)));
 
 export const logUserIn = (token) => {
   localStorage.setItem(TOKEN, token);
